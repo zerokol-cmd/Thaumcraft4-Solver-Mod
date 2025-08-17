@@ -1,8 +1,13 @@
 package com.myname.mymodid;
 
+import net.minecraft.client.settings.KeyBinding;
+import net.minecraftforge.client.ClientCommandHandler;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.lwjgl.input.Keyboard;
 
+import cpw.mods.fml.client.registry.ClientRegistry;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
@@ -18,6 +23,7 @@ public class MyMod {
 
     @SidedProxy(clientSide = "com.myname.mymodid.ClientProxy", serverSide = "com.myname.mymodid.CommonProxy")
     public static CommonProxy proxy;
+    public static KeyBinding solveKeybind;
 
     @Mod.EventHandler
     // preInit "Run before anything else. Read your config, create blocks, items, etc, and register them with the
@@ -30,6 +36,10 @@ public class MyMod {
     // load "Do your mod setup. Build whatever data structures you care about. Register recipes." (Remove if not needed)
     public void init(FMLInitializationEvent event) {
         proxy.init(event);
+        ClientCommandHandler.instance.registerCommand(new ThaumcraftAspectGetter());
+
+        solveKeybind = new KeyBinding("key.myaction", Keyboard.KEY_P, "key.categories.misc");
+        ClientRegistry.registerKeyBinding(solveKeybind);
     }
 
     @Mod.EventHandler

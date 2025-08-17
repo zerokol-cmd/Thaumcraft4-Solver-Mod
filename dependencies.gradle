@@ -35,5 +35,5 @@
  */
 dependencies {
     api("com.github.GTNewHorizons:Baubles:1.0.4:dev")
-    runtimeOnlyNonPublishable("thaumcraft:Thaumcraft:1.7.10-4.2.3.5:dev")
+    api("thaumcraft:Thaumcraft:1.7.10-4.2.3.5:dev")
 }
