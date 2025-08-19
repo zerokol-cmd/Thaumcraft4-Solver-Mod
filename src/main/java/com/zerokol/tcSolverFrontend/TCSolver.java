@@ -1,7 +1,6 @@
-package com.myname.mymodid;
+package com.zerokol.tcSolverFrontend;
 
 import net.minecraft.client.settings.KeyBinding;
-import net.minecraftforge.client.ClientCommandHandler;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -15,18 +14,20 @@ import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 
-@Mod(modid = MyMod.MODID, version = Tags.VERSION, name = "MyMod", acceptedMinecraftVersions = "[1.7.10]")
-public class MyMod {
+@Mod(modid = TCSolver.MODID, version = Tags.VERSION, name = "MyMod", acceptedMinecraftVersions = "[1.7.10]")
+public class TCSolver {
 
-    public static final String MODID = "mymodid";
+    public static final String MODID = "TCSolver";
     public static final Logger LOG = LogManager.getLogger(MODID);
 
-    @SidedProxy(clientSide = "com.myname.mymodid.ClientProxy", serverSide = "com.myname.mymodid.CommonProxy")
+    @SidedProxy(
+        clientSide = "com.zerokol.tcSolverFrontend.ClientProxy",
+        serverSide = "com.zerokol.tcSolverFrontend.CommonProxy")
     public static CommonProxy proxy;
     public static KeyBinding solveKeybind;
 
     @Mod.EventHandler
-    // preInit "Run before anything else. Read your config, create blocks, items, etc, and register them with the
+    // preInit "Run before anything else. Read your config, create blocks, items, etc., and register them with the
     // GameRegistry." (Remove if not needed)
     public void preInit(FMLPreInitializationEvent event) {
         proxy.preInit(event);
@@ -36,10 +37,11 @@ public class MyMod {
     // load "Do your mod setup. Build whatever data structures you care about. Register recipes." (Remove if not needed)
     public void init(FMLInitializationEvent event) {
         proxy.init(event);
-        ClientCommandHandler.instance.registerCommand(new ThaumcraftAspectGetter());
+        // ClientCommandHandler.instance.registerCommand(new ThaumcraftAspectGetter());
 
-        solveKeybind = new KeyBinding("key.myaction", Keyboard.KEY_P, "key.categories.misc");
+        solveKeybind = new KeyBinding("Solve Research note", Keyboard.KEY_LEFT, "key.categories.misc");
         ClientRegistry.registerKeyBinding(solveKeybind);
+
     }
 
     @Mod.EventHandler

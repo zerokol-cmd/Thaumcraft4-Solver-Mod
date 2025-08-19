@@ -1,4 +1,4 @@
-package com.myname.mymodid;
+package com.zerokol.tcSolverFrontend;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -10,8 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.*;
 
 import thaumcraft.api.aspects.Aspect;
 import thaumcraft.api.aspects.AspectList;
@@ -50,6 +49,7 @@ public class SolverBackendCommunicator {
                 .append("\",");
             sb.append("\"type\":")
                 .append(hex.type);
+            System.out.println("HEx type: " + hex.type);
             sb.append("}");
         }
         sb.append("},");
@@ -130,10 +130,11 @@ public class SolverBackendCommunicator {
                 cell.y = (int) Math.round(cell.y - offsetY);
             }
         }
-    };
+    }
 
     public ArrayList<Cell> RequestSolution(HashMap<String, ResearchManager.HexEntry> hexEntries,
         Map<String, AspectList> aspectsDiscovered) throws IOException {
+
         // Pack into JSON
         ArrayList<Cell> cells = new ArrayList<>();
         String json = pack(hexEntries, aspectsDiscovered);
@@ -164,28 +165,31 @@ public class SolverBackendCommunicator {
             while ((line = br.readLine()) != null) {
                 response.append(line.trim());
             }
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode root = mapper.readTree(response.toString());
-            // root is a 2D array
+            JsonParser parser = new JsonParser();
+            JsonElement rootElement = parser.parse(response.toString());
+            JsonArray root = rootElement.getAsJsonArray(); // root is a 2D array
 
-            for (JsonNode row : root) {
-                for (JsonNode cellNode : row) {
-                    int x = cellNode.get("x")
-                        .asInt();
-                    int y = cellNode.get("y")
-                        .asInt();
-                    int arrayX = cellNode.get("array_x")
-                        .asInt();
-                    int arrayY = cellNode.get("array_y")
-                        .asInt();
-                    String aspect = cellNode.get("aspect")
-                        .asText();
+            for (JsonElement rowElement : root) {
+                JsonArray row = rowElement.getAsJsonArray();
+
+                for (JsonElement cellElement : row) {
+                    JsonObject cellObj = cellElement.getAsJsonObject();
+
+                    int x = cellObj.get("x")
+                        .getAsInt();
+                    int y = cellObj.get("y")
+                        .getAsInt();
+                    int arrayX = cellObj.get("array_x")
+                        .getAsInt();
+                    int arrayY = cellObj.get("array_y")
+                        .getAsInt();
+                    String aspect = cellObj.get("aspect")
+                        .getAsString();
 
                     Cell cell = new Cell(x, y, arrayX, arrayY, aspect);
                     cells.add(cell);
                 }
             }
-
         }
 
         conn.disconnect();

@@ -118,7 +118,22 @@ var aspect_flavor_dict = {
 	'superbia': 'pride',
 	'tempus': 'time',
 
-	
+	'electrum': 'electricity',
+	'magneto': 'magnetism',
+	'nebrisum': 'cheatiness',
+	'radio': 'radioactivity',
+	'strontio': 'stupidity',
+	'terminus': 'apocalypse',
+	'coralos': 'coralium',
+	'dreadia': 'dread',
+	'tincturem': 'color',
+	'sanctus': 'holiness',
+	'exubitor': 'warden',
+	'saxum': 'stone',
+	'granum': 'seed',
+	'mru': 'magical radiation unit',
+	'radiation': 'radiation',
+	'matrix': 'protection'
 }
 
 var all_aspect_flavor_dict = {};
@@ -266,24 +281,23 @@ var aspect_table = {
 	'luxuria': ['corpus', 'fames'],
 	'superbia': ['volatus', 'vacuos'],
 	'tempus': ['vacuos', 'ordo'],
-	
 	'electrum': ['potentia', 'machina'],
 	'magneto': ['metallum', 'iter'],
 	'nebrisum': ['perfodio', 'lucrum'],
 	'radio': ['lux', 'potentia'],
 	'strontio': ['perditio', 'cognitio'],
-	'terminus': ['alienis', 'lucrum'],
+	//'terminus': ['alienis', 'lucrum'],
 
-	'coralos': ['venenum', 'aqua'],
-	'dreadia': ['venenum', 'ignis'],
-	'tincturem': ['lux', 'ordo'],
-	'sanctus': ['spiritus', 'auram'],
-	'exubitor': ['alienis', 'mortuus'],
-	'saxum': ['terra', 'terra'],
-	'granum': ['terra', 'victus'],
-	'mru': ['praecantatio', 'potentia'],
-	'radiation': ['mru', 'motus'],
-	'matrix': ['mru', 'humanus']
+	// 'coralos': ['venenum', 'aqua'],
+	// 'dreadia': ['venenum', 'ignis'],
+	// 'tincturem': ['lux', 'ordo'],
+	// 'sanctus': ['spiritus', 'auram'],
+	// 'exubitor': ['alienis', 'mortuus'],
+	// 'saxum': ['terra', 'terra'],
+	// 'granum': ['terra', 'victus'],
+	// 'mru': ['praecantatio', 'potentia'],
+	// 'radiation': ['mru', 'motus'],
+	// 'matrix': ['mru', 'humanus']
 };
 
 var all_aspect_table = {};
@@ -640,7 +654,7 @@ function closest_cells(state) {
 							continue;
 						}
 						if (state.current_path && !path_complete(current_state.current_path, current_state) && !path_complete(state.current_path, state)) {
-							if (grid[i][j].id != state.current_path[last_used_path_cell(state)]) {
+							if (state.grid[i][j].id != state.current_path[last_used_path_cell(state)]) {
 								continue;
 							}
 						}
@@ -1110,7 +1124,7 @@ function main_loop() {
 	}
 	console.log(`entering depth ${depth}`);
 	depth++;
-
+	console.log(current_state.bad_state_reason)
 	if (check_continuity(current_state.grid)) {
 		solved = true;
 		console.log("==============\nS O L V E D\n==============");
@@ -1118,8 +1132,10 @@ function main_loop() {
 	}
 	if (!returning_from_bad_state) {
 		console.log(`Not returning from bad state`)
-
+		
 		var temp_closest_cells = closest_cells(current_state);
+		console.log(temp_closest_cells);
+
 		if (temp_closest_cells.length > 0) {
 			if (current_state.current_path && path_complete(current_state.current_path, current_state)) {
 				remove_excess_aspects(current_state);
@@ -1254,7 +1270,7 @@ function solve() {
 			main_loop();
 		}
 
-	}else{
+	} else {
 		console.log("something went wrong")
 	}
 }
@@ -1335,8 +1351,8 @@ function generateGrid(data) {
   const hexEntries = data.hexEntries;
   if (!hexEntries) return [];
 
+  // Extract and process coordinates from hexEntries
   const keys = Object.keys(hexEntries).map(k => k.split(':').map(Number));
-  
   const xs = keys.map(k => k[0]);
   const ys = keys.map(k => k[1]);
 
@@ -1348,46 +1364,86 @@ function generateGrid(data) {
   const width = maxX - minX + 1;
   const height = maxY - minY + 1;
 
+  // Calculate the size parameter (radius of the hex grid)
+  const size = Math.floor((width - 1) / 2);
+
   let idCounter = 0;
 
-  // Initialize grid with dummy cells
-  const Cells = Array.from({ length: width }, (_, i) =>
-    Array.from({ length: height }, (_, j) => ({
-      x: i,
-      y: j,
-      aspect: 'none',
-      barred: true,
-      side_len: 0,
-      selected: false,
-      highlighted: false,
-      base: false,
-      id: idCounter++,
-      array_x: i,
-      array_y: j
-    }))
-  );
+  const Cells = Array.from({ length: width }, (_, array_x) => {
+    // Calculate how many cells should be in this column
+    const colSize = size * 2 + 1 - Math.abs(array_x - size);
 
-  // Replace with real cells where hexEntries exist
-  for (const [key, value] of Object.entries(hexEntries)) {
-    const [x, y] = key.split(':').map(Number);
-    const i = x - minX;
-    const j = y - minY;
-    Cells[i][j] = {
-      x: i,
-      y: j,
-      aspect: value.aspect.toLowerCase(),
-      barred: false,
-      side_len: 0,
-      selected: false,
-      highlighted: false,
-      base: false,
-      id: Cells[i][j].id, // keep the id assigned in dummy cell
-      array_x: i,
-      array_y: j
-    };
-  }
+    return Array.from({ length: colSize }, (_, array_y) => {
+      // Determine the actual y coordinate in the original data
+      let y;
+      if (array_x <= size) {
+        // Left side columns: bottom-aligned
+        y = maxY - colSize + array_y + 1;
+      } else {
+        // Right side columns: top-aligned
+        y = minY + array_y;
+      }
+
+      const x = array_x + minX;
+      const key = `${x}:${y}`;
+      const cellData = hexEntries[key];
+
+      const aspect = cellData ? cellData.aspect.toLowerCase() : 'none';
+	  barred = true
+	  if(cellData){
+		barred = false
+	  }
+
+	  
+      return {
+        x,
+        y,
+        aspect,
+        barred: barred,
+        side_len: 0,
+        selected: false,
+        highlighted: false,
+        base: aspect !== 'none', // ✅ base true if aspect is not "none"
+        id: idCounter++,
+        array_x,
+        array_y
+      };
+    });
+  });
 
   return Cells;
+}
+
+function generateColumnHeights(gridB) {
+  const cols = gridB.length;
+  const center = Math.floor(cols / 2);
+  const maxRows = gridB[center].length;
+  
+  return gridB.map((_, i) => maxRows - Math.abs(center - i));
+}
+
+function remapGridBIndices(gridB) {
+  const center = Math.floor(gridB.length / 2);
+  const columnHeights = generateColumnHeights(gridB);
+
+  return gridB.map((col, array_x) => {
+    const height = columnHeights[array_x];
+    let startIndex;
+    
+    if (array_x <= center) {
+      // Left columns: take bottom-aligned slice
+      startIndex = col.length - height;
+    } else {
+      // Right columns: take top-aligned slice
+      startIndex = 0;
+    }
+    
+    return col.slice(startIndex, startIndex + height).map((cell, newY) => ({
+      ...cell,
+      array_x,
+      array_y: newY
+    }));
+  });
 }
 const http = require("http");
 
@@ -1413,11 +1469,22 @@ const server = http.createServer((req, res) => {
 
 			// Now pass the parsed object to generateGrid
 			grid = generateGrid(data);
+			grid = remapGridBIndices(grid)
+			const fs = require("fs");
+
+			// Suppose `grid` is your gridData
+			console.log("grid:", grid);
+
+			// Write to file
+			fs.writeFileSync("grid.json", JSON.stringify(grid, null, 2), "utf-8");
+
+			console.log("Saved to grid.json");
+
 			current_state.grid = grid;
 			reset();
 			solve();
-			console.log("grid: ", grid)
-			
+
+
 			// Respond
 			res.writeHead(200, { "Content-Type": "application/json" });
 			res.end(JSON.stringify(grid));

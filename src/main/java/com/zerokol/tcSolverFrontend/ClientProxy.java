@@ -1,4 +1,4 @@
-package com.myname.mymodid;
+package com.zerokol.tcSolverFrontend;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.event.FMLInitializationEvent;

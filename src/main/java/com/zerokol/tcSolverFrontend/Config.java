@@ -1,4 +1,4 @@
-package com.myname.mymodid;
+package com.zerokol.tcSolverFrontend;
 
 import java.io.File;
 
